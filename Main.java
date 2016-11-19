@@ -21,7 +21,7 @@ public class Main extends Application {
     
     @Override public void start(Stage stage) {
         Config.initialize();    //to initialize the image destination
-        Group root = new Group();     
+        final Group root = new Group();     
         mainFrame = new MainFrame(root);    //initialize the frame 
         stage.setTitle("Hanzo VS Junkrat!");    //initialize the stage
         stage.setResizable(false);
@@ -49,7 +49,7 @@ public class Main extends Application {
         private Level level;
 
         // Number of lifes
-        private int lifeCount;
+        public int lifeCount;
 
         // Current score
         private int score;

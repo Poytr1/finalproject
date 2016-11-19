@@ -16,25 +16,26 @@ import javafx.scene.image.ImageView;
  */
 public class Hanzo extends Parent{
     private ImageView imageView;
-    private int size;
+    private double size;
     
-    public void changeSize (int size) {
+    public void changeSize (double size) {
         imageView.setScaleX(size);
         imageView.setScaleY(size);
     }
     
-    public int getsize () {
+    public double getsize () {
         return this.size;
     }
     
     public Hanzo() {
         imageView = new ImageView();
+        getChildren().add(imageView);
         Image image = new Image(Hanzo.class.getResourceAsStream(Config.IMAGE_DIR + "hanzo.png"));
         imageView.setImage(image);
-        this.size = 40;
+        this.size = 0.2;
         changeSize(size);
         //imageView.setScaleX(BASELINE_OFFSET_SAME_AS_HEIGHT);
-        getChildren().add(imageView);
+        //getChildren().add(imageView);
         setMouseTransparent(true);
     }
 }

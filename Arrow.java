@@ -20,6 +20,8 @@ public class Arrow extends Parent{
         imageView = new ImageView();
         Image image = new Image(Arrow.class.getResourceAsStream(Config.IMAGE_DIR + "arrow.png"));
         imageView.setImage(image);
+        imageView.setScaleX(0.05);
+        imageView.setScaleY(0.05);
         getChildren().add(imageView);
         setMouseTransparent(true);
     }

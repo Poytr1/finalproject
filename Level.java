@@ -10,6 +10,7 @@ package finalproject;
 import finalproject.Main.MainFrame;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -26,7 +27,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -41,6 +41,7 @@ public class Level extends Parent {
 
     private ArrayList<Junkrat> junkrats;
     private ArrayList<Junkrat> fadeJunkrats;
+    private ArrayList<Heart> hearts;
     private int junkratCount ;
     private static final int JUNK_NUM = 4;
     private Group group;
@@ -54,24 +55,31 @@ public class Level extends Parent {
     private static final int READY = 1;
     private static final int PLAYING = 2;
     private static final int GAME_OVER = 3;
-    
+   
     private int state;
     private int levelNumber;
-    private double junkratDir;
+    private double junkratDir = 0;
     private Text roundCaption;
     private Text round;
     private Text scoreCaption;
     private Text score;
-    private Text livesCaption;
+    private Text livesCaption;   
     private ImageView message;
     private Timeline startingTimeline;
     private Timeline timeline;
     private Group infoPanel;
     private Junkrat junkrat;
+    private ImageView junkratshadow;
     private Hanzo hanzo;
+    private Powerbar powerbar;
     private Arrow arrow_unshot;
     private int power = 0;
+    private int stateArg = 0;
     private boolean isPress;
+    private double angle;
+    private double arrowDirx;
+    private double arrowDiry;
+    private double timer = 0;
    
     
     public Level(int levelNumber) {
@@ -86,8 +94,6 @@ public class Level extends Parent {
             public void handle(ActionEvent event) {
                 message.setVisible(true);
                 state = STARTING_LEVEL;
-                junkrat.setVisible(false);
-                hanzo.setVisible(false);
             }
         }, new KeyValue(message.opacityProperty(), 0));
         KeyFrame kf2 = new KeyFrame(Duration.millis(1500), new KeyValue(message.opacityProperty(), 1));
@@ -95,11 +101,8 @@ public class Level extends Parent {
         KeyFrame kf4 = new KeyFrame(Duration.millis(4000), new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 message.setVisible(false);
-                hanzo.setTranslateX(hanzo.getsize()/2 + 10);
-                hanzo.setTranslateY(Config.SCREEN_HEIGHT - hanzo.getsize()/2 - 10);
+                powerbar.setVisible(true);
                 junkratDir = Config.JUNKRAT_MIN_SPEED;
-                hanzo.setVisible(true);
-                junkrat.setVisible(true);
                 state = READY;
             }
         },new KeyValue(message.opacityProperty(), 0));
@@ -122,14 +125,60 @@ public class Level extends Parent {
                         junkratIterator.remove();
                     }
                 }
-                //rotate arrow ready to shot
                 if(state != STARTING_LEVEL) {
-                    //rotateArrow()
+                    stateArg++;
+                    /*if(stateArg == 90) {
+                        stateArg = 0;
+                    } */
+                    junkrat.setRotate(-stateArg * junkratDir);
+                    junkrat.setTranslateX(630 - stateArg * junkratDir / junkrat.getScaleX()/2);
+                    junkratshadow.setRotate(-stateArg * junkratDir);
+                    junkratshadow.setTranslateX(640 - stateArg * junkratDir / junkrat.getScaleX()/2);
+                    powerbar.update(power);
+                    if((hanzo.getTranslateX()) == (junkrat.getTranslateX())) {
+                        lostLife();
+                        stateArg = 0;
+                    }
+                   // arrowDirx = Math.abs(Math.cos(Math.abs(angle / 180 * Math.PI)) * power);
+                   // arrowDiry = Math.abs(Math.sin(Math.abs(angle / 180 * Math.PI)) * power);
+                    if((arrowDirx>0) && (!isPress)) {
+                        arrow_unshot.setTranslateX(-800 + timer * arrowDirx);
+                        arrow_unshot.setTranslateY(505 - (-(10 * Math.pow(timer, 2)) + arrowDiry * timer));
+                        arrow_unshot.setRotate(angle - timer/0.3 * angle / (arrowDiry / 5));
+                        timer += 0.3;
+                    }
+                    
+                    if (arrow_unshot.getTranslateY() > 600) {
+                        arrowDirx = 0;
+                        arrowDiry = 0;
+                        timer = 0;
+                        arrow_unshot.setRotate(0);
+                        arrow_unshot.setTranslateX(-800);
+                        arrow_unshot.setTranslateY(505);
+                    }
                 }
-                
             }
         });
-        timeline.getKeyFrames().add(kf);
+        KeyFrame kf1 = new KeyFrame(Config.ANIMATION_TIME_FAST, new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if(isPress) {
+                    if (power<=150)
+                        power += 4;
+                    else
+                        ;
+                    arrowDirx = Math.abs(Math.cos(Math.abs(angle / 180 * Math.PI)) * power);
+                    arrowDiry = Math.abs(Math.sin(Math.abs(angle / 180 * Math.PI)) * power);
+                    angle = arrow_unshot.getRotate();
+                   //S ystem.out.println(junkrat.getx());
+                    
+                }
+                else {
+                    power = 0;
+                }
+            }
+        });
+        timeline.getKeyFrames().addAll(kf,kf1);
      
     }
     
@@ -139,7 +188,7 @@ public class Level extends Parent {
         
         group.getChildren().get(0).requestFocus();
         updateScore(0);
-        //updateLives();
+        updateLives();
     }
     
     public void stop() {
@@ -167,19 +216,55 @@ public class Level extends Parent {
     }
     
     private void rotateArrow(double shita) {
-        
-        
+        arrow_unshot.setRotate(- shita * 150);     
     }
+    private void updateLives() {
+        Heart newHeart;
+        if(mainFrame.lifeCount == 3) {
+            for(int i = 0 ; i < mainFrame.getLifeCount() ; i ++) {
+            Heart heart = new Heart();
+            heart.setTranslateX(95 + (i-1) * 35);
+            heart.setTranslateY(-178);
+            heart.setVisible(true);
+            hearts.add(heart);
+            infoPanel.getChildren().add(heart);
+        }}
+        else {
+            newHeart = hearts.get(hearts.size() -1);
+            hearts.remove(newHeart);
+            infoPanel.getChildren().remove(newHeart);
+        }
+    }
+    private void lostLife() {
+        mainFrame.decreaseLives();
+        if (mainFrame.getLifeCount() < 0) {
+            state = GAME_OVER;
+            hanzo.setVisible(false);
+            junkrat.setVisible(false);
+            junkratshadow.setVisible(false);
+            //arrow_unshot.setVisible(false);
+            message.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "gameover.png")));
+            message.setTranslateX((Config.FIELD_WIDTH - message.getImage().getWidth())/2);
+            message.setTranslateY((Config.FIELD_HEIGHT - message.getImage().getHeight())/2 + Config.SCREEN_HEIGHT - Config.FIELD_HEIGHT);
+            message.setVisible(true);
+            message.setOpacity(1);
+        }
+        else {
+            mainFrame.lifeCount -- ;
+            updateLives();  
+        }
+    }
+    
     private void initInfoPanel() {
         infoPanel = new Group();
         //roundCaption
         roundCaption = new Text();
         roundCaption.setText("ROUND"); 
         roundCaption.setTextOrigin(VPos.TOP);
-        roundCaption.setFill(Color.rgb(151, 102, 52));
+        roundCaption.setFill(Color.rgb(51, 102, 51));
         Font f = new Font("Impact", 18);
         roundCaption.setFont(f);
-        roundCaption.setTranslateX(128);
+        roundCaption.setTranslateX(160);
         roundCaption.setTranslateY(30);
         //round
         round = new Text();
@@ -193,7 +278,7 @@ public class Level extends Parent {
         scoreCaption = new Text();
         scoreCaption.setText("SCORE");
         scoreCaption.setFill(Color.rgb(51, 102, 51));
-        scoreCaption.setTranslateX(164);
+        scoreCaption.setTranslateX(220);
         scoreCaption.setTranslateY(30);
         scoreCaption.setTextOrigin(VPos.TOP);
         scoreCaption.setFont(f);
@@ -208,37 +293,34 @@ public class Level extends Parent {
         //lifesCaption
         livesCaption = new Text();
         livesCaption.setText("LIFE");
-        livesCaption.setTranslateX(200);
+        livesCaption.setTranslateX(300);
         livesCaption.setTranslateY(30);
         livesCaption.setFill(Color.rgb(51, 102, 51));
         livesCaption.setTextOrigin(VPos.TOP);
         livesCaption.setFont(f);
         //info settings
-        Color INFO_LEGEND_COLOR = Color.rgb(0, 114, 188);
+        //Color INFO_LEGEND_COLOR = Color.rgb(0, 114, 188);
         int infoWidth = Config.SCREEN_WIDTH;
         int infoHeight = Config.SCREEN_HEIGHT - Config.FIELD_HEIGHT;
-        Rectangle black = new Rectangle();
-        black.setWidth(infoWidth);
-        black.setHeight(infoHeight);
-        black.setFill(INFO_LEGEND_COLOR);
+        ImageView black = new ImageView();
+        black.setFitWidth(infoWidth);
+        black.setFitHeight(infoHeight);
+        black.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "black.jpeg")));
+        
         ImageView verLine = new ImageView();
-        verLine.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "verline.png")));
+        verLine.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "vline.png")));
+        verLine.setScaleX(2);
         verLine.setTranslateY(infoHeight - 3);
         
         ImageView logo = new ImageView();
         logo.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "logo.png")));
-        logo.setTranslateX(30);
-        logo.setTranslateY(30);
-        Text legend = new Text();
-        legend.setTranslateX(310);
-        legend.setTranslateY(30);
-        legend.setText("LEGEND");
-        legend.setFill(INFO_LEGEND_COLOR);
-        legend.setTextOrigin(VPos.TOP);
-        legend.setFont(f);
+        logo.setScaleX(0.3);
+        logo.setScaleY(0.3);
+        logo.setTranslateX(-180);
+        logo.setTranslateY(-190);
         
-        infoPanel.getChildren().addAll(black, verLine, logo, roundCaption, round, scoreCaption, score, livesCaption, legend);
-        infoPanel.setTranslateY(Config.FIELD_HEIGHT);
+        infoPanel.getChildren().addAll(black, verLine, logo, roundCaption, round, scoreCaption, score, livesCaption);
+        infoPanel.setTranslateY(0);
         
     
     }
@@ -247,26 +329,54 @@ public class Level extends Parent {
             levelNumber = level;
             junkrats = new ArrayList<Junkrat>();
             fadeJunkrats = new ArrayList<Junkrat>();
+            hearts = new ArrayList<Heart>();
+            hanzo = new Hanzo();
+            hanzo.setTranslateX(-170);
+            hanzo.setTranslateY(400);
+            hanzo.setVisible(true);
+            junkrat = new Junkrat();
+            junkrat.setTranslateX(630);
+            junkrat.setTranslateY(400);
+            junkrat.setVisible(true);
+            arrow_unshot = new Arrow();
+            arrow_unshot.setTranslateX(-800);
+            arrow_unshot.setTranslateY(505);
+            arrow_unshot.setVisible(true);
             message = new ImageView();
-            message.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "IMAGE_READY")));
+            message.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "ready.png")));
             message.setTranslateX((Config.FIELD_WIDTH - message.getImage().getWidth())/2);
             message.setTranslateY((Config.FIELD_HEIGHT - message.getImage().getHeight())/2 + Config.SCREEN_HEIGHT - Config.FIELD_HEIGHT);
             message.setVisible(false);
+            powerbar = new Powerbar();
+            //powerbar.setVisible(false);
+            //powerbar.set
+           // powerbar.setTranslateY(300);
             initLevel();
             initStartingTimeline();
             initTimeline();
             initInfoPanel();
+            junkratshadow = new ImageView();
+            junkratshadow.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "junkratshadow.png")));
+            junkratshadow.setScaleX(0.2);
+            junkratshadow.setScaleY(0.2);
+            junkratshadow.setTranslateX(640);
+            junkratshadow.setTranslateY(400);
+            junkratshadow.setOpacity(0.5);
             ImageView background = new ImageView();
             background.setFocusTraversable(true);
             background.setImage(new Image(Level.class.getResourceAsStream(Config.IMAGE_DIR + "background.png")));
             background.setFitWidth(Config.FIELD_WIDTH);
             background.setFitHeight(Config.FIELD_HEIGHT);
+            background.setTranslateY(Config.SCREEN_HEIGHT - Config.FIELD_HEIGHT);
             background.setOnMouseMoved(new EventHandler<MouseEvent>() {
                 public void handle(MouseEvent me) {
-                    if (me.getY() > hanzo.getTranslateY())
+                    if (me.getY() > arrow_unshot.getTranslateY()) {
                         rotateArrow(0);
-                    else 
-                    rotateArrow((double)Math.atan( ((double)hanzo.getTranslateY()-me.getY()) / (me.getX() - hanzo.getTranslateX())));
+                        angle = 0;
+                    }
+                    else {
+                        rotateArrow((double)Math.atan(((double)arrow_unshot.getTranslateY()-me.getY() + 60) / (me.getX() - arrow_unshot.getTranslateX())));
+                    }
                 }
                 });
             background.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -279,7 +389,7 @@ public class Level extends Parent {
                     isPress = false;
                     if (me.getButton() == MouseButton.SECONDARY) {
                         
-                        
+        
                     }
                     else 
                         ;
@@ -302,7 +412,8 @@ public class Level extends Parent {
                     }
                 }
             });
-            group.getChildren().addAll(message, infoPanel);
+            group.getChildren().add(background);
+            group.getChildren().addAll(hanzo,junkrat,message, infoPanel,powerbar,junkratshadow,arrow_unshot);
             }   
             
 }

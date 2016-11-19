@@ -16,6 +16,7 @@ import javafx.scene.image.Image;
  */
 public final class Config {
     public static final Duration ANIMATION_TIME = Duration.millis(40);
+    public static final Duration ANIMATION_TIME_FAST = Duration.millis(20);
     public static final int WINDOW_BORDER = 3;
     public static final int TITLE_BAR_HEIGHT = 19;
     public static final String IMAGE_DIR = "images/";
@@ -23,7 +24,7 @@ public final class Config {
     public static final int SCREEN_HEIGHT = 720;
     public static final int INFO_TEXT_SPACE = 10;
     public static final int FIELD_WIDTH = SCREEN_WIDTH;
-    public static final int FIELD_HEIGHT = SCREEN_HEIGHT * 3 / 5;
+    public static final int FIELD_HEIGHT = SCREEN_HEIGHT * 9 / 11;
     public static final int JUNKRAT_MIN_SPEED = 10;
     
     public static final int IMAGE_BACKGROUND = 0;
