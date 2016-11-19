@@ -5,24 +5,26 @@
  */
 package finalproject;
 
-/**
- *
- * @author poytr1
- */
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class Junkrat  extends Parent{
+/**
+ *
+ * @author poytr1
+ */
+public class Heart extends Parent{
     private ImageView content;
-    public Junkrat() {
+    
+    public Heart() {
         content = new ImageView();
         getChildren().add(content);
-        Image image = new Image(Junkrat.class.getResourceAsStream(Config.IMAGE_DIR + "junkrat.png"));
+        Image image = new Image(Heart.class.getResourceAsStream(Config.IMAGE_DIR + "heart.png"));
         content.setImage(image);
-        content.setScaleX(0.2);
-        content.setScaleY(0.2);
+        content.setScaleX(0.05);
+        content.setScaleY(0.05);
         setMouseTransparent(true);
     }
+    
     
 }
