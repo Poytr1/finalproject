@@ -150,7 +150,7 @@ public class Level extends Parent {
                         arrowshadow.setScaleY(0.05 * Math.cos(arrow_unshot.getRotate() / 180 * Math.PI));
                         timer += 0.3;
                     }
-                    if ((arrow_unshot.getTranslateX()+630) > (junkrat.getTranslateX() - 10) && ((arrow_unshot.getTranslateX() + 630) < (junkrat.getTranslateX() + 10)) && (arrow_unshot.getTranslateY() > 500) && (state != GAME_OVER)) {
+                    if ((arrow_unshot.getTranslateX()+630) > (junkrat.getTranslateX() - 10) && ((arrow_unshot.getTranslateX() + 630) < (junkrat.getTranslateX() + 20)) && (arrow_unshot.getTranslateY() > 500) && (state != GAME_OVER)) {
                         updateScore(10);
                         junkratCount ++;      
                         state = PLAYING;
