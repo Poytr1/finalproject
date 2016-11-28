@@ -150,7 +150,7 @@ public class Level extends Parent {
                         arrowshadow.setScaleY(0.05 * Math.cos(arrow_unshot.getRotate() / 180 * Math.PI));
                         timer += 0.3;
                     }
-                    if ((arrow_unshot.getTranslateX()+630) > (junkrat.getTranslateX() - 10) && ((arrow_unshot.getTranslateX() + 630) < (junkrat.getTranslateX() + 20)) && (arrow_unshot.getTranslateY() > 500) && (state != GAME_OVER)) {
+                    if ((arrow_unshot.getTranslateX()+630) > (junkrat.getTranslateX() + 10) && ((arrow_unshot.getTranslateX() + 630) < (junkrat.getTranslateX() + 30)) && (arrow_unshot.getTranslateY() > 500) && (state != (GAME_OVER)) && (state != PLAYING)) {
                         updateScore(10);
                         junkratCount ++;      
                         state = PLAYING;
@@ -253,7 +253,7 @@ public class Level extends Parent {
     }
     private void updateLives() {
         Heart newHeart;
-        if(mainFrame.lifeCount == 3) {
+        if(mainFrame.getLifeCount() == 3) {
             for(int i = 0 ; i < mainFrame.getLifeCount() ; i ++) {
             Heart heart = new Heart();
             heart.setTranslateX(95 + (i-1) * 35);
@@ -263,7 +263,8 @@ public class Level extends Parent {
             infoPanel.getChildren().add(heart);
         }}
         else {
-            newHeart = hearts.get(hearts.size() -1);
+            System.out.println(hearts.size()+" "+mainFrame.getLifeCount());
+            newHeart = hearts.get(hearts.size() - 1);
             hearts.remove(newHeart);
             infoPanel.getChildren().remove(newHeart);
         }
@@ -285,7 +286,6 @@ public class Level extends Parent {
             message.setOpacity(1);
         }
         else {
-            mainFrame.lifeCount -- ;
             updateLives();  
         }
     }

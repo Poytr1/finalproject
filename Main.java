@@ -49,7 +49,7 @@ public class Main extends Application {
         private Level level;
 
         // Number of lifes
-        public int lifeCount;
+        private int lifeCount;
 
         // Current score
         private int score;
